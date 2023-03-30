@@ -18,72 +18,9 @@ mongoose.connect(mongourl,{
     useNewUrlParser:true
 })
 //endpoints
-app.post("/create",async(req,res)=>{
-    try{
-        const ress=await taskmodel.create(req.body)
-        res.status(201).send(ress)
-    }
-    catch(err){
-        console.log(err)
-    }
-})
-
 app.get("/",async(req,res)=>{
-    try{
-        
-        const ress=await taskmodel.find()
-        res.status(200).send(ress)
-    }
-    catch(err){
-        console.log(err)
-    }
+    res.send("works !")
 })
-
-app.delete("/:id",async(req,res)=>{
-    try{
-        const ress=await taskmodel.findByIdAndDelete({_id:req.params.id})
-        res.status(202).send(ress)
-    }
-    catch(err){
-        console.log(err)
-    }
-})
-const pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID,
-  key: process.env.PUSHER_KEY,
-  secret: process.env.PUSHER_SECRET,
-  cluster: "eu",
-  useTLS: true
-});
-const db=mongoose.connection;
-db.once("open",()=>{
-    console.log("db connected")
-    const collection=db.collection("tasks")
-    const changeStream=collection.watch()
-    changeStream.on("change",(change)=>{
-        if(change.operationType=="insert"){
-            const task=change.fullDocument;
-            pusher.trigger("my-channel", "my-event", {
-                _id:task._id,
-              value: task.value,
-              __v:task.__v
-            });
-            
-        }
-        else if(change.operationType=="delete"){
-            pusher.trigger("my-channel", "my-event", {
-                _id:"",
-              value:"",
-              __v:""
-            });
-        }
-        else{
-            console.log(err)
-        }
-    })
-})
-
-
 //listening
 app.listen(port,()=>{
     console.log(`server starting on port : ${port}`)
